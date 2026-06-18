@@ -8,7 +8,7 @@ sequenceDiagram
     activate Server
     Server-->>Browser: Returns the Appended HTML doc
     deactivate Server
-    Browser->>Server: GET https://studies.cs.helsinki.fi/exampleapp/main.js
+    Browser->>Server: GET https://studies.cs.helsinki.fi/exampleapp/main.css
     activate Server
     Server-->>Browser: Returns stylesheet
     deactivate Server
