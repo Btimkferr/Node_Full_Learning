@@ -4,7 +4,7 @@ const express = require('express');
 const Person = require('./models/person');
 const app = express()
 
-morgan.token('body', getBody = (req)=>{
+morgan.token('body', getBody = (req) => {
     return JSON.stringify(req.body);
 })
 
@@ -35,13 +35,13 @@ let phonebook = [
     }
 ]
 
-app.get('/api/persons', (request, response) =>{
+app.get('/api/persons', (request, response) => {
     Person.find({}).then(persons=>{
         response.json(persons);
     })
 })
 
-app.get('/info',(request,response) =>{
+app.get('/info',(request,response) => {
     
 
     const curTime = new Date();
@@ -53,14 +53,14 @@ app.get('/info',(request,response) =>{
 
 })
 
-app.get('/api/persons/:id', (request,response) =>{
+app.get('/api/persons/:id', (request,response) => {
     const id = request.params.id;
     Person.findById(id).then(person=>{
         response.json(person);
     })
 })
 
-app.delete('/api/persons/:id', (request, response, next) =>{
+app.delete('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
     Person.findByIdAndDelete(id).then(result=>{
         response.status(204).end();
@@ -68,7 +68,7 @@ app.delete('/api/persons/:id', (request, response, next) =>{
 
 })
 
-const generateId = () =>{
+const generateId = () => {
     let valid = false;
     while(!valid){
         const idAttempt = Math.floor(Math.random() * 10000);
@@ -79,7 +79,7 @@ const generateId = () =>{
     }
 }
 
-app.post('/api/persons', (request, response,next) =>{
+app.post('/api/persons', (request, response,next) => {
     const body = request.body;
     console.log("hi");
     const person = new Person({
@@ -93,7 +93,7 @@ app.post('/api/persons', (request, response,next) =>{
     
 })
 
-app.put('/api/persons/:id', (request,response,next) =>{
+app.put('/api/persons/:id', (request,response,next) => {
     const {name, number} = request.body;
 
     Person.findById(request.params.id).then(person=>{
@@ -104,7 +104,7 @@ app.put('/api/persons/:id', (request,response,next) =>{
         person.number = number;
         
 
-        return person.save().then(updatedPerson =>{
+        return person.save().then(updatedPerson => {
             response.json(updatedPerson);
         }).catch(error => next(error));
         
@@ -112,7 +112,7 @@ app.put('/api/persons/:id', (request,response,next) =>{
 })
 
 
-const errorHandler = (error, request, response, next)  =>{
+const errorHandler = (error, request, response, next)  => {
   console.error(error.message);
    if (error.name === 'CastError') {
     return response.status(400).send({ error: 'Malformatted id' })
@@ -126,7 +126,7 @@ const errorHandler = (error, request, response, next)  =>{
 
 app.use(errorHandler);
 
-const unknownEndpoint = (request, response) =>{
+const unknownEndpoint = (request, response) => {
     response.status(404).send({error: "Unknown endpoint"});
 }
 app.use(unknownEndpoint);
@@ -135,6 +135,6 @@ app.use(unknownEndpoint);
 
 
 const PORT = 3001;
-app.listen(PORT, ()=>{
+app.listen(PORT, () => {
     console.log(`Server running on ${PORT}`);
 })
