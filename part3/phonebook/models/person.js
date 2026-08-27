@@ -13,13 +13,32 @@ mongoose.connect(url, {family:4}).then(result=>{
 })
 
 const personSchema = new mongoose.Schema({
-    name: String,
-    number: String,
+    name: {
+        type: String,
+        minLength: 3,
+
+    },
+    number: {
+        type: String,
+        minLength: 8,
+        validate: {
+            validator: function (v){
+                if(/^\d{3}-\d/.test(v) || /^\d{2}-\d/.test(v)){
+                    return  true;
+                }
+                return false;
+            },
+            message: props => `${props.value} is not a valid phone number`
+        },
+        required: [true, 'User Phone number required']
+    },
 })
 
-personSchema.set('toJson',{
+const opts = {runValidators:true};
+
+personSchema.set('toJSON',{
     transform: (document,returnedObject) =>{
-        returnedObject.id = returnedObject._id;
+        returnedObject.id = returnedObject._id.toString();
         delete returnedObject._id;
         delete returnedObject.__v;
     }
