@@ -1,5 +1,7 @@
+require('dotenv').config();
 const morgan = require('morgan');
 const express = require('express');
+const Person = require('./models/person');
 const app = express()
 
 morgan.token('body', getBody = (req)=>{
@@ -34,7 +36,9 @@ let phonebook = [
 ]
 
 app.get('/api/persons', (request, response) =>{
-    response.json(phonebook);
+    Person.find({}).then(persons=>{
+        response.json(persons);
+    })
 })
 
 app.get('/info',(request,response) =>{
@@ -48,13 +52,9 @@ app.get('/info',(request,response) =>{
 
 app.get('/api/persons/:id', (request,response) =>{
     const id = request.params.id;
-    const person = phonebook.find(p => p.id===id);
- 
-    if(person){
+    Person.findById(id).then(person=>{
         response.json(person);
-    }else{
-        response.status(404).end();
-    }
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) =>{
@@ -102,14 +102,15 @@ app.post('/api/persons', (request, response) =>{
 
     
 
-    const person = {
-        id: newID,
+    const person = new Person({
         name: body.name,
         number: body.number
-    }
+    });
 
-    phonebook = phonebook.concat(person);
-    response.json(person);
+    person.save().then(savedPerson=>{
+        response.json(savedPerson);
+    })
+    
 })
 
 
