@@ -52,7 +52,7 @@ const AddPerson = ({newNumber,newName,persons,setNewName,setNewNumber,setPersons
         ).catch(
           error=>{
             setPositiveNotifcation(false);
-            setNotifyMessage(`Error:${error} updating person`);
+            setNotifyMessage(`Error:${error.message} updating person`);
             setTimeout(() =>{
               setNotifyMessage(null);
             }, 5000);
@@ -73,6 +73,12 @@ const AddPerson = ({newNumber,newName,persons,setNewName,setNewNumber,setPersons
         }, 5000);
         setNewName('');
         setNewNumber('');
+      }).catch(error =>{
+        setPositiveNotifcation(false);
+        setNotifyMessage(`Error Creating: ${error.response.data.error}`);
+        setTimeout(()=>{
+          setNotifyMessage(null);
+        },5000)
       })
       
   }

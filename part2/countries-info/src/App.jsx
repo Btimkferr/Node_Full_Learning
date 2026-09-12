@@ -5,6 +5,8 @@ import gets from './services/countryCommands';
 const Countries = ({countryList}  ) =>{
   const [countryInfo, setCountryInfo] = useState([]);
 
+  const toggleInfo = ()
+
   useEffect(() => {
     if( countryList.length ===1){
       gets.search(countryList[0]).then(result =>{setCountryInfo(result)})
@@ -47,7 +49,10 @@ const Countries = ({countryList}  ) =>{
     )
   }else if(countryList.length >0){
     return(
-      <div>{countryList.map(c => <p>{c}</p>)}</div>
+      <div>{countryList.map(c => {
+      <p>{c}</p>
+      <button onClick=></button>
+    })}</div>
     )
   }else{
     return(
@@ -59,7 +64,27 @@ const Countries = ({countryList}  ) =>{
   
 }
 
-
+const CountryInfo = (countryInfo) =>{
+  return (
+    <div>
+          <h1>{countryInfo.name.common}</h1>
+          <p>Capital: {countryInfo.capital}</p>
+          <p>Area: {countryInfo.area}km²</p>
+          <h3>Languages</h3>
+          <ul>
+            
+            {Object.keys(countryInfo.languages).map(key =>{
+              
+              console.log(countryInfo.languages[key]);
+              return(<li key={key}>{countryInfo.languages[key]}</li>)
+            })}
+            
+            
+          </ul>
+          <img src={countryInfo.flags.png}></img>
+        </div>
+  )
+}
 
 const Country = (country) =>{
   return (
