@@ -15,10 +15,19 @@ const bcrypt = require('bcrypt');
 
 const api = supertest(app);
 
+let token = null;
+
 
 beforeEach(async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(helper.initialBlogs)
+
+    const tokenResponse = await api.post('/api/login').send(helper.loginTemplate);
+    token = tokenResponse.body.token;
+
+
+    console.log('Token created: ', token);
+
 })
 
 
@@ -62,9 +71,15 @@ describe('Posting a new note tests', () => {
             url: "www.stillMyBlog.com",
             likes: 2
         }
-        const newBlog = new Blog(blogData)
+        
+        await api
+            .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}` )
+            .send(blogData)
+            .expect(201)
+            .expect('Content-Type', /application\/json/);
 
-        await newBlog.save();
+       
         const laterDB = (await helper.blogsInDb());
         assert.strictEqual(helper.initialBlogs.length + 1, laterDB.length);
 
@@ -81,6 +96,7 @@ describe('Posting a new note tests', () => {
 
         await api
             .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}` )
             .send(blogDataNoLikes)
             .expect(201)
             .expect('Content-Type', /application\/json/);
@@ -100,6 +116,7 @@ describe('Posting a new note tests', () => {
         }
         await api
             .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}` )
             .send(blankUrlBlog)
             .expect(400)
 
@@ -115,6 +132,7 @@ describe('Posting a new note tests', () => {
         }
         await api
             .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}` )
             .send(blankTitleBlog)
             .expect(400)
 
@@ -132,6 +150,7 @@ describe('Getting specific notes', () => {
 
         const resultingblog = await api
             .get(`/api/blogs/${testBlog.id}`)
+            .set('Authorization', `Bearer ${token}` )
             .expect(200)
             .expect('Content-Type', /application\/json/);
 
@@ -156,6 +175,7 @@ describe('Deleting a blog tests', () => {
 
         await api
             .delete(`/api/blogs/${blogToDelete.id}`)
+            .set('Authorization', `Bearer ${token}` )
             .expect(204)
 
         const endBlogs = await helper.blogsInDb()

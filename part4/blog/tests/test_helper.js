@@ -1,5 +1,6 @@
 const Blog = require('../models/blog');
 
+
 const initialBlogs = [{
        
         title: 'Go To Statement Considered Harmful',
@@ -14,10 +15,13 @@ const initialBlogs = [{
         author: 'm3',
         url: 'www.blog.com',
         likes: 6,
-        
     }
 ]
 
+const loginTemplate = {
+    username: "root",
+    password: "password1"
+};
 
 
 const blogsInDb = async () => {
@@ -36,4 +40,4 @@ const nonExistingId = async () => {
     return blog._id.toString();
 }
 
-module.exports = {initialBlogs, blogsInDb, nonExistingId}
+module.exports = {initialBlogs, blogsInDb, nonExistingId, loginTemplate}
