@@ -9,7 +9,9 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
 const helper = require('./test_helper');
+const userHelper = require('./user_test_helper');
 const Blog = require('../models/blog');
+const User = require('../models/user');
 const bcrypt = require('bcrypt');
 
 
@@ -19,11 +21,30 @@ let token = null;
 
 
 beforeEach(async () => {
-    await Blog.deleteMany({})
-    await Blog.insertMany(helper.initialBlogs)
+    await User.deleteMany({});
+    const passwordHash = await bcrypt.hash('password1', 10);
+    const user = new User({
+        username: 'root',
+        name: 'Beck',
+        passwordHash: passwordHash
+    });
+
+    const user1 = await user.save();
+    /*
+    const usersInDb = await userHelper.usersInDb();
+    const user1 = usersInDb[0];*/
+
+    const userBlogs = helper.initialBlogs.map(blog => ({
+        ...blog,
+        user: user1.id
+    }))
+
 
     const tokenResponse = await api.post('/api/login').send(helper.loginTemplate);
     token = tokenResponse.body.token;
+
+    await Blog.deleteMany({});
+    await Blog.insertMany(userBlogs);
 
 
     console.log('Token created: ', token);
@@ -71,15 +92,15 @@ describe('Posting a new note tests', () => {
             url: "www.stillMyBlog.com",
             likes: 2
         }
-        
+
         await api
             .post('/api/blogs')
-            .set('Authorization', `Bearer ${token}` )
+            .set('Authorization', `Bearer ${token}`)
             .send(blogData)
             .expect(201)
             .expect('Content-Type', /application\/json/);
 
-       
+
         const laterDB = (await helper.blogsInDb());
         assert.strictEqual(helper.initialBlogs.length + 1, laterDB.length);
 
@@ -96,7 +117,7 @@ describe('Posting a new note tests', () => {
 
         await api
             .post('/api/blogs')
-            .set('Authorization', `Bearer ${token}` )
+            .set('Authorization', `Bearer ${token}`)
             .send(blogDataNoLikes)
             .expect(201)
             .expect('Content-Type', /application\/json/);
@@ -108,6 +129,28 @@ describe('Posting a new note tests', () => {
 
     })
 
+    test('A new blog with no token is rejected', async () => {
+        const blogData = {
+            title: "the new test blog",
+            author: "Still m3",
+            url: "www.stillMyBlog.com",
+            likes: 2
+        }
+
+        await api
+            .post('/api/blogs')
+            .send(blogData)
+            .expect(401)
+            .expect('Content-Type', /application\/json/);
+
+
+        const laterDB = (await helper.blogsInDb());
+        assert.strictEqual(helper.initialBlogs.length , laterDB.length);
+
+        
+
+    })
+
     test('Blank url returns 400', async () => {
         const blankUrlBlog = {
             title: "i have no url",
@@ -116,7 +159,7 @@ describe('Posting a new note tests', () => {
         }
         await api
             .post('/api/blogs')
-            .set('Authorization', `Bearer ${token}` )
+            .set('Authorization', `Bearer ${token}`)
             .send(blankUrlBlog)
             .expect(400)
 
@@ -132,7 +175,7 @@ describe('Posting a new note tests', () => {
         }
         await api
             .post('/api/blogs')
-            .set('Authorization', `Bearer ${token}` )
+            .set('Authorization', `Bearer ${token}`)
             .send(blankTitleBlog)
             .expect(400)
 
@@ -150,10 +193,11 @@ describe('Getting specific notes', () => {
 
         const resultingblog = await api
             .get(`/api/blogs/${testBlog.id}`)
-            .set('Authorization', `Bearer ${token}` )
+            .set('Authorization', `Bearer ${token}`)
             .expect(200)
             .expect('Content-Type', /application\/json/);
 
+        testBlog.user = [testBlog.user.toString()];
         assert.deepStrictEqual(resultingblog.body, testBlog);
 
     })
@@ -175,7 +219,7 @@ describe('Deleting a blog tests', () => {
 
         await api
             .delete(`/api/blogs/${blogToDelete.id}`)
-            .set('Authorization', `Bearer ${token}` )
+            .set('Authorization', `Bearer ${token}`)
             .expect(204)
 
         const endBlogs = await helper.blogsInDb()
@@ -205,7 +249,7 @@ describe('Updating a blog tests', () => {
             .expect(200)
 
         const endDB = await helper.blogsInDb();
-    
+
         assert.deepStrictEqual(endDB[0].likes, updatedData.likes);
 
     })
